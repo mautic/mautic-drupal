@@ -1,0 +1,83 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ *
+ * Enables mautic tracker
+ */
+
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path 
+ *   Which path of the site we're using to display help
+ * @param arg 
+ *   Array that holds the current path as returned from arg() function
+ */
+function mautic_tracker_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#mautic_tracker":
+      return '<p>' . t("Tracker for mautic") . '</p>';
+      break;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mautic_tracker_menu() {
+  $items = array();
+
+  $items['admin/config/mautic'] = array(
+    'title' => 'Mautic URL',
+    'description' => 'Configuration for Current posts module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mautic_tracker_form'),
+    'access arguments' => array('access administration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function mautic_tracker_form() {
+  $form = array();
+
+  $form['mautic_base_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Mautic URL'),
+    '#default_value' => variable_get('mautic_base_url', ''),
+    '#size' => 60,
+    '#description' => t("Your mautic base url."),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function mautic_tracker_block_info() {
+  $blocks = array();
+
+  $blocks['mautic_tracker'] = array(
+    'info' => t('Mautic Tracker.'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+function mautic_tracker_block_view($delta = '') {
+  switch ($delta) {
+    case 'mautic_tracker':
+      $block['subject'] = t('mautic Tracker');
+      $block['content'] = sprintf('<img src="%s/p/page/tracker.gif" />',variable_get('mautic_base_url', ''));
+      return $block;
+      break; 
+ }
+}
