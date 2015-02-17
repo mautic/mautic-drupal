@@ -76,7 +76,7 @@ function mautic_tracker_block_view($delta = '') {
   switch ($delta) {
     case 'mautic_tracker':
       $block['subject'] = t('mautic Tracker');
-      $block['content'] = sprintf('<img src="%s/p/page/tracker.gif" />',variable_get('mautic_base_url', ''));
+      $block['content'] = sprintf('<img src="%s/p/mtracking.gif" />',variable_get('mautic_base_url', ''));
       return $block;
       break; 
  }
