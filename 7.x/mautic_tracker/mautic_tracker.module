@@ -36,7 +36,7 @@ function mautic_tracker_menu() {
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mautic_tracker_form'),
-    'access arguments' => array('access administration'),
+    'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
 

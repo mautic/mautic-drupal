@@ -1,7 +1,7 @@
-name = Tracker
+name = Mautic Tracker
 description = Tracker for mautic
 package = Mautic
-version = VERSION
+version = 6.x-1.0
 core = 6.x
 files[] = mautic_tracker.module
 configure = admin/config/content/mautic_tracker
