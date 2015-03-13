@@ -19,3 +19,11 @@ Module will insert 1 px gif image loaded from your Mautic instance. You can chec
 `<img src="http://yourmautic.com/mtracking.gif" />`
 
 There will be probably longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).
+
+### Form embed
+
+To embed a Mautic form into Drupal content, insert this code snippet:
+
+`{mauticform id=ID width=300px height=300px}`
+
+ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.
