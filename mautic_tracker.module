@@ -29,6 +29,7 @@ function mautic_tracker_help($path, $arg) {
       $output .= '<dt>' . t('Form embed') . '</dt>';
       $output .= '<dd>' . t("To embed a Mautic form into Drupal content, insert this code snippet:<br><code>{mauticform id=ID width=300px height=300px}</code><br>ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.") . '</dd>';
       $output .= '</dl>';
+      $output .= '<p>' . t('Mautic-Drupal module <a href="@doc">documentation</a>, <a href="@issues">issue reporting</a>', array('@doc' => 'https://github.com/mautic/mautic-drupal/tree/7.x#readme', '@issues' => 'https://github.com/mautic/mautic-drupal/issues')) . '</p>';
 
       return $output;
       break;
