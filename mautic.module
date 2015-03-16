@@ -29,7 +29,7 @@ function mautic_menu() {
   $items = array();
 
   $items['admin/config/mautic'] = array(
-    'title' => 'Mautic URL',
+    'title' => 'Mautic',
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mautic_form'),
