@@ -52,6 +52,25 @@ function mautic_form() {
     '#required' => TRUE,
   );
 
+  $form['mautic_load_form_js'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Mautic Forms'),
+    '#default_value' => variable_get('mautic_load_form_js', ''),
+    '#description' => t("If you want to embed a Mautic Form, it is necessary to load a JavaScript file."),
+    '#required' => FALSE,
+  );
+
+  if (variable_get('mautic_load_form_js', '')) {
+    $form['mautic_shortcode_example'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Mautic Form Shortcode'),
+      '#default_value' => '{mauticform id=1 width=300px height=300px}',
+      '#description' => t("Insert the shortcode to your content. Mautic Form JavaScript will replace this code with iframe of Mautic form with ID 1. Change the ID to the ID of the for you want to load. You can change width and height as your for needs."),
+      '#required' => FALSE,
+      '#disabled' => TRUE
+    );
+  }
+
   return system_settings_form($form);
 }
 
