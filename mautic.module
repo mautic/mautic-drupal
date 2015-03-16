@@ -14,10 +14,10 @@
  * @param arg 
  *   Array that holds the current path as returned from arg() function
  */
-function mautic_tracker_help($path, $arg) {
+function mautic_help($path, $arg) {
   switch ($path) {
-    case "admin/help#mautic_tracker":
-      return '<p>' . t("Tracker for mautic") . '</p>';
+    case "admin/help#mautic":
+      return '<p>' . t("Mautic integration") . '</p>';
       break;
   }
 }
@@ -25,14 +25,14 @@ function mautic_tracker_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function mautic_tracker_menu() {
+function mautic_menu() {
   $items = array();
 
   $items['admin/config/mautic'] = array(
     'title' => 'Mautic URL',
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mautic_tracker_form'),
+    'page arguments' => array('mautic_form'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -40,7 +40,7 @@ function mautic_tracker_menu() {
   return $items;
 }
 
-function mautic_tracker_form() {
+function mautic_form() {
   $form = array();
 
   $form['mautic_base_url'] = array(
@@ -58,7 +58,7 @@ function mautic_tracker_form() {
 /**
 * Implementation of hook_block().
 */
-function mautic_tracker_block($op = 'list', $delta = 0) {
+function mautic_block($op = 'list', $delta = 0) {
   $block = array();
   switch ($op) {
     case 'list':
