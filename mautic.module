@@ -85,11 +85,30 @@ function mautic_block($op = 'list', $delta = 0) {
       return $block;
     case 'view':
       switch ($delta) {
-        case 0: 
-          $block['content'] = sprintf('<img src="%s/mtracking.gif" />', variable_get('mautic_base_url', ''));
-          break;
+        case 0:
         case 1:
-          $block['content'] = sprintf('<img src="%s/mtracking.gif" />', variable_get('mautic_base_url', ''));
+
+          global $language;
+          global $base_root;
+
+          $current_url        = $base_root . request_uri();
+
+          // Get additional data to send
+          $attrs = array();
+          $attrs['title']     = drupal_get_title();
+          $attrs['language']  = $language->language;
+          $attrs['referrer']  = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $current_url;
+          $attrs['url']       = $current_url;
+
+          $encodedAttrs       = urlencode(base64_encode(serialize($attrs)));
+          $mautic_base_url    = trim(variable_get('mautic_base_url', ''), ' \t\n\r\0\x0B/');
+
+          if (variable_get('mautic_load_form_js', 0)) {
+            $formJs           = '<script src="%1$s/media/js/mautic-form.js?modal_css=0"></script>';
+          } else {
+            $formJs           = '';
+          }
+          $block['content'] = sprintf('<img style="display:none" src="%s/mtracking.gif?d=%s" />' . $formJs, $mautic_base_url, $encodedAttrs);
           break;
       }
       return $block;
