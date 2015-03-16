@@ -17,7 +17,17 @@
 function mautic_help($path, $arg) {
   switch ($path) {
     case "admin/help#mautic":
-      return '<p>' . t("Mautic integration") . '</p>';
+      $output = '<p>' . t('This Drupal module lets you add the <a href="@mautic">Mautic</a> tracking gif to your Drupal website and embed Mautic forms in Drupal content.', array('@mautic' => 'http://mautic.org')) . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt><b>' . t('Mautic Tracking') . '</b></dt>';
+      $output .= '<dd>' . t('Tracking image works right after you enable the module, insert Base URL and save the plugin. That means it will insert 1 px gif image loaded from your Mautic instance. You can check HTML source code (CTRL + U) of your Drupal website to make sure the plugin works. You should be able to find something like this:<br><code>&lt;img src="http://yourmautic.com/mtracking.gif" /&gt;</code><br>There will be probably longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).') . '</dd>';
+      $output .= '<dt><b>' . t('Form embed') . '</b></dt>';
+      $output .= '<dd>' . t("To embed a Mautic form into Drupal content, insert this code snippet:<br><br>{<code>mauticform id=ID width=300px height=300px</code>}<br><br>ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.") . '</dd>';
+      $output .= '</dl>';
+      $output .= '<p>' . t('Mautic-Drupal module <a href="@doc">documentation</a>, <a href="@issues">issue reporting</a>', array('@doc' => 'https://github.com/mautic/mautic-drupal/tree/7.x#readme', '@issues' => 'https://github.com/mautic/mautic-drupal/issues')) . '</p>';
+
+      return $output;
       break;
   }
 }
