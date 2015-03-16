@@ -122,7 +122,7 @@ function mautic_tracker_block_view($delta = '') {
       $mautic_base_url    = trim(variable_get('mautic_base_url', ''), ' \t\n\r\0\x0B/');
 
       if (variable_get('mautic_load_form_js', 0)) {
-        $formJs           = '<script src="%1$s/media/js/mautic-form.js?modal_css=0"></script>';
+        $formJs           = '<script src="%1$s/media/js/mautic-form.js"></script>';
       } else {
         $formJs           = '';
       }
