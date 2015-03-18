@@ -1,0 +1,126 @@
+<?php
+/**
+ * @file
+ * Enables multi-user blogs.
+ */
+
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param path 
+ *   Which path of the site we're using to display help
+ * @param arg 
+ *   Array that holds the current path as returned from arg() function
+ */
+function mautic_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#mautic":
+      $output = '<p>' . t('This Drupal module lets you add the <a href="@mautic">Mautic</a> tracking gif to your Drupal website and embed Mautic forms in Drupal content.', array('@mautic' => 'http://mautic.org')) . '</p>';
+      $output .= '<h3>' . t('Features') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt><b>' . t('Mautic Tracking') . '</b></dt>';
+      $output .= '<dd>' . t('Tracking image works right after you enable the module, insert Base URL and save the plugin. That means it will insert 1 px gif image loaded from your Mautic instance. You can check HTML source code (CTRL + U) of your Drupal website to make sure the plugin works. You should be able to find something like this:<br><code>&lt;img src="http://yourmautic.com/mtracking.gif" /&gt;</code><br>There will be probably longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).') . '</dd>';
+      $output .= '<dt><b>' . t('Form embed') . '</b></dt>';
+      $output .= '<dd>' . t("To embed a Mautic form into Drupal content, insert this code snippet:<br><br>{<code>mauticform id=ID width=300px height=300px</code>}<br><br>ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.") . '</dd>';
+      $output .= '</dl>';
+      $output .= '<p>' . t('Mautic-Drupal module <a href="@doc">documentation</a>, <a href="@issues">issue reporting</a>', array('@doc' => 'https://github.com/mautic/mautic-drupal/tree/7.x#readme', '@issues' => 'https://github.com/mautic/mautic-drupal/issues')) . '</p>';
+
+      return $output;
+      break;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mautic_menu() {
+  $items = array();
+
+  $items['admin/config/mautic'] = array(
+    'title' => 'Mautic',
+    'description' => 'Configuration for Current posts module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mautic_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function mautic_form() {
+  $form = array();
+
+  $form['mautic_base_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Mautic URL'),
+    '#default_value' => variable_get('mautic_base_url', ''),
+    '#size' => 60,
+    '#description' => t("Your mautic base url."),
+    '#required' => TRUE,
+  );
+
+  $form['mautic_load_form_js'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Mautic Forms'),
+    '#default_value' => variable_get('mautic_load_form_js', ''),
+    '#description' => t("If you want to embed a Mautic Form, it is necessary to load a JavaScript file."),
+    '#required' => FALSE,
+  );
+
+  if (variable_get('mautic_load_form_js', '')) {
+    $form['mautic_shortcode_example'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Mautic Form Shortcode'),
+      '#default_value' => '{mauticform id=1 width=300px height=300px}',
+      '#description' => t("Insert the shortcode to your content. Mautic Form JavaScript will replace this code with iframe of Mautic form with ID 1. Change the ID to the ID of the for you want to load. You can change width and height as your for needs."),
+      '#required' => FALSE,
+      '#disabled' => TRUE
+    );
+  }
+
+  return system_settings_form($form);
+}
+
+/**
+* Implementation of hook_block().
+*/
+function mautic_block($op = 'list', $delta = 0) {
+  $block = array();
+  switch ($op) {
+    case 'list':
+      $block[0]['info'] = t('Mautic Tracker');
+      return $block;
+    case 'view':
+      switch ($delta) {
+        case 0:
+        case 1:
+
+          global $language;
+          global $base_root;
+
+          $current_url        = $base_root . request_uri();
+
+          // Get additional data to send
+          $attrs = array();
+          $attrs['title']     = drupal_get_title();
+          $attrs['language']  = $language->language;
+          $attrs['referrer']  = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $current_url;
+          $attrs['url']       = $current_url;
+
+          $encodedAttrs       = urlencode(base64_encode(serialize($attrs)));
+          $mautic_base_url    = trim(variable_get('mautic_base_url', ''), ' \t\n\r\0\x0B/');
+
+          if (variable_get('mautic_load_form_js', 0)) {
+            $formJs           = '<script src="%1$s/media/js/mautic-form.js"></script>';
+          } else {
+            $formJs           = '';
+          }
+          $block['content'] = sprintf('<img style="display:none" src="%s/mtracking.gif?d=%s" />' . $formJs, $mautic_base_url, $encodedAttrs);
+          break;
+      }
+      return $block;
+  }
+}
