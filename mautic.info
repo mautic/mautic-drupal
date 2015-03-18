@@ -1,0 +1,7 @@
+name = Mautic Integration
+description = Mautic tracking and forms
+package = Mautic
+version = 7.x-1.0
+core = 7.x
+files[] = mautic.module
+configure = admin/config/mautic
