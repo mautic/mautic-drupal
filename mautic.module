@@ -17,9 +17,9 @@
  * @param arg 
  *   Array that holds the current path as returned from arg() function
  */
-function mautic_tracker_help($path, $arg) {
+function mautic_help($path, $arg) {
   switch ($path) {
-    case "admin/help#mautic_tracker":
+    case "admin/help#mautic":
       $output = '<h3>' . t("Mautic integration") . '</h3>';
       $output .= '<p>' . t('This Drupal module lets you add the <a href="@mautic">Mautic</a> tracking gif to your Drupal website and embed Mautic forms in Drupal content.', array('@mautic' => 'http://mautic.org')) . '</p>';
       $output .= '<h3>' . t('Features') . '</h3>';
@@ -39,14 +39,14 @@ function mautic_tracker_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function mautic_tracker_menu() {
+function mautic_menu() {
   $items = array();
 
   $items['admin/config/mautic'] = array(
     'title' => 'Mautic URL',
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('mautic_tracker_form'),
+    'page arguments' => array('mautic_form'),
     'access arguments' => array('access administration pages'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -54,7 +54,7 @@ function mautic_tracker_menu() {
   return $items;
 }
 
-function mautic_tracker_form() {
+function mautic_form() {
   $form = array();
 
   $form['mautic_base_url'] = array(
@@ -91,20 +91,20 @@ function mautic_tracker_form() {
 /**
  * Implements hook_block_info().
  */
-function mautic_tracker_block_info() {
+function mautic_block_info() {
   $blocks = array();
 
-  $blocks['mautic_tracker'] = array(
-    'info' => t('Mautic Tracker.'),
+  $blocks['mautic'] = array(
+    'info' => t('Mautic Tracking and Form embed.'),
     'cache' => DRUPAL_NO_CACHE,
   );
 
   return $blocks;
 }
 
-function mautic_tracker_block_view($delta = '') {
+function mautic_block_view($delta = '') {
   switch ($delta) {
-    case 'mautic_tracker':
+    case 'mautic':
 
       global $language;
       global $base_root;
