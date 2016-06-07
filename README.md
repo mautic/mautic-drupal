@@ -6,7 +6,7 @@ This Drupal 6 module lets you add the Mautic tracking gif image to your Drupal w
 ### Installation
 
 1. [Download](https://github.com/mautic/mautic-drupal/archive/6.x.zip) zip package.
-2. Unzip downloaded file to your drupal instance into `sites/all/modules`. ([read more](https://www.drupal.org/documentation/install/modules-themes/modules-5-6))
+2. Unzip downloaded file to your Drupal instance into `sites/all/modules`. ([read more](https://www.drupal.org/documentation/install/modules-themes/modules-5-6))
 3. Go to **Administer** / **Site building** / **Modules**
 4. **Mautic Integration** module should be at the bottom. Enable it.
 5. Go to **Administer** / **Mautic** and insert Mautic Base URL. Save it.
@@ -14,11 +14,11 @@ This Drupal 6 module lets you add the Mautic tracking gif image to your Drupal w
 
 ### Mautic Tracking Image
 
-Module will insert 1 px gif image loaded from your Mautic instance. You can check HTML source code (CTRL + U) of your Joomla website to make sure the plugin works. You should be able to find something like this:
+The module will insert a 1 px gif image loaded from your Mautic instance. You can check the HTML source code (CTRL + U) of your Drupal website to make sure the plugin works. You should be able to find something like this:
 
 `<img src="http://yourmautic.com/mtracking.gif" />`
 
-There will be probably longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).
+There will probably be a longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).
 
 ### Form embed
 
