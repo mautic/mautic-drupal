@@ -111,7 +111,7 @@ function mautic_block($op = 'list', $delta = 0) {
           $attrs['url']       = $current_url;
 
           $encodedAttrs       = urlencode(base64_encode(serialize($attrs)));
-          $mautic_base_url    = trim(variable_get('mautic_base_url', ''), ' \t\n\r\0\x0B/');
+          $mautic_base_url    = trim(variable_get('mautic_base_url', ''), " \t\n\r\0\x0B/");
 
           if (variable_get('mautic_load_form_js', 0)) {
             $formJs           = '<script src="%1$s/media/js/mautic-form.js"></script>';
