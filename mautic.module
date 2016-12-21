@@ -8,13 +8,18 @@
  */
 
 /**
+ * Define default path exclusion list to remove tracking from admin pages.
+ */
+define('MAUTIC_PAGES', "admin\nadmin/*\nbatch\nnode/add*\nnode/*/*\nuser/*/*");
+
+/**
  * Implements hook_help().
  *
  * Displays help and module information.
  *
- * @param path 
+ * @param path
  *   Which path of the site we're using to display help
- * @param arg 
+ * @param arg
  *   Array that holds the current path as returned from arg() function
  */
 function mautic_help($path, $arg) {
@@ -34,6 +39,51 @@ function mautic_help($path, $arg) {
       return $output;
       break;
   }
+}
+
+/**
+ * Implements hook_page_alter() to insert JavaScript to the appropriate scope/region of the page.
+ */
+function mautic_page_alter(&$page) {
+  $mautic_base_url = variable_get('mautic_base_url', '');
+  $script = <<<JS
+    (function(w,d,t,u,n,a,m){w['MauticTrackingObject']=n;
+        w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)},a=d.createElement(t),
+        m=d.getElementsByTagName(t)[0];a.async=1;a.src=u;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','{$mautic_base_url}/mtc.js','mt');
+    mt('send', 'pageview');
+JS;
+  drupal_add_js($script, array('scope' => 'header', 'type' => 'inline', 'requires_jquery' => FALSE));
+}
+
+/**
+ * Implementation of hook_filter_info()
+ */
+function mautic_filter_info() {
+  $filters['mautic_shortcode'] = array(
+    'title' => t('Mautic Shortcodes'),
+    'description' => t('Sets up a custom filter that helps create mautic artifacts.'),
+    'process callback' => 'mautic_filter_shortcodes_process',
+    'tips callback'  => 'mautic_filter_shortcodes_tips',
+    'cache' => FALSE,
+  );
+  return $filters;
+}
+
+function mautic_filter_shortcodes_process($text, $filter, $format, $langcode, $cache, $cache_id) {
+  return preg_replace_callback('/\[mauticform id=(.*)\]/', '_mautic_filter_replace', $text);
+}
+
+function mautic_filter_shortcodes_tips($filter, $format, $long) {
+  return t('[mauticform id=1] - Insert a Mautic form with given ID.');
+}
+
+function _mautic_filter_replace($matches) {
+  $form_id = $matches[1];
+  $mautic_base_url = variable_get('mautic_base_url', '');
+  $args = array('@mautic_base_url' => $mautic_base_url, '@form_id' => $form_id);
+  $script = format_string('<script src="@mautic_base_url/form/generate.js?id=@form_id"></script>', $args);
+  return $script;
 }
 
 /**
@@ -66,70 +116,5 @@ function mautic_form() {
     '#required' => TRUE,
   );
 
-  $form['mautic_load_form_js'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use Mautic Forms'),
-    '#default_value' => variable_get('mautic_load_form_js', ''),
-    '#description' => t("If you want to embed a Mautic Form, it is necessary to load a JavaScript file."),
-    '#required' => FALSE,
-  );
-
-  if (variable_get('mautic_load_form_js', '')) {
-    $form['mautic_shortcode_example'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Mautic Form Shortcode'),
-      '#default_value' => '{mauticform id=1 width=300px height=300px}',
-      '#description' => t("Insert the shortcode to your content. Mautic Form JavaScript will replace this code with iframe of Mautic form with ID 1. Change the ID to the ID of the for you want to load. You can change width and height as your for needs."),
-      '#required' => FALSE,
-      '#disabled' => TRUE
-    );
-  }
-
   return system_settings_form($form);
-}
-
-/**
- * Implements hook_block_info().
- */
-function mautic_block_info() {
-  $blocks = array();
-
-  $blocks['mautic'] = array(
-    'info' => t('Mautic Tracking and Form embed.'),
-    'cache' => DRUPAL_NO_CACHE,
-  );
-
-  return $blocks;
-}
-
-function mautic_block_view($delta = '') {
-  switch ($delta) {
-    case 'mautic':
-
-      global $language;
-      global $base_root;
-
-      $current_url        = $base_root . request_uri();
-
-      // Get additional data to send
-      $attrs = array();
-      $attrs['title']     = drupal_get_title();
-      $attrs['language']  = $language->language;
-      $attrs['referrer']  = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : $current_url;
-      $attrs['url']       = $current_url;
-
-      $encodedAttrs       = urlencode(base64_encode(serialize($attrs)));
-      $mautic_base_url    = trim(variable_get('mautic_base_url', ''), ' \t\n\r\0\x0B/');
-
-      if (variable_get('mautic_load_form_js', 0)) {
-        $formJs           = '<script src="%1$s/media/js/mautic-form.js"></script>';
-      } else {
-        $formJs           = '';
-      }
-
-      $block['content']   = sprintf('<img style="display:none" src="%s/mtracking.gif?d=%s" />' . $formJs, $mautic_base_url, $encodedAttrs);
-
-      return $block;
-      break; 
-  }
 }
