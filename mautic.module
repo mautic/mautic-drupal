@@ -45,15 +45,15 @@ function mautic_help($path, $arg) {
  * Implements hook_page_alter() to insert JavaScript to the appropriate scope/region of the page.
  */
 function mautic_page_alter(&$page) {
-  $mautic_base_url = variable_get('mautic_base_url', '');
-  $script = <<<JS
-    (function(w,d,t,u,n,a,m){w['MauticTrackingObject']=n;
-        w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)},a=d.createElement(t),
-        m=d.getElementsByTagName(t)[0];a.async=1;a.src=u;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','{$mautic_base_url}/mtc.js','mt');
-    mt('send', 'pageview');
-JS;
-  drupal_add_js($script, array('scope' => 'header', 'type' => 'inline', 'requires_jquery' => FALSE));
+  if( _mautic_visibility_pages()) {
+    $mautic_base_url = variable_get('mautic_base_url', '');
+    $script = '(function(w,d,t,u,n,a,m){w["MauticTrackingObject"]=n;';
+    $script .= 'w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)},a=d.createElement(t),';
+    $script .= 'm=d.getElementsByTagName(t)[0];a.async=1;a.src=u;m.parentNode.insertBefore(a,m)';
+    $script .= '})(window,document,"script","' . $mautic_base_url . '/mtc.js","mt");';
+    $script .= 'mt("send", "pageview");';
+    drupal_add_js($script, array('scope' => 'header', 'type' => 'inline', 'requires_jquery' => FALSE));
+  }
 }
 
 /**
@@ -71,19 +71,29 @@ function mautic_filter_info() {
 }
 
 function mautic_filter_shortcodes_process($text, $filter, $format, $langcode, $cache, $cache_id) {
-  return preg_replace_callback('/\[mauticform id=(.*)\]/', '_mautic_filter_replace', $text);
+  $text = preg_replace_callback('/\[mauticform id=(.*)\]/', '_mautic_form_replace', $text);
+  $text = preg_replace_callback('/\[mautic type="content" slot="(.*)"\](.*)\[\/mautic\]/', '_mautic_dynamic_content_replace', $text);
+  return $text;
 }
 
 function mautic_filter_shortcodes_tips($filter, $format, $long) {
-  return t('[mauticform id=1] - Insert a Mautic form with given ID.');
+  return t('[mauticform id=1] - Insert a Mautic form with given ID.\n[mautic type="content" slot="slot_name"]Default Content[/mautic] - Insert dynamic web content.');
 }
 
-function _mautic_filter_replace($matches) {
+function _mautic_form_replace($matches) {
   $form_id = $matches[1];
   $mautic_base_url = variable_get('mautic_base_url', '');
   $args = array('@mautic_base_url' => $mautic_base_url, '@form_id' => $form_id);
   $script = format_string('<script src="@mautic_base_url/form/generate.js?id=@form_id"></script>', $args);
   return $script;
+}
+
+function _mautic_dynamic_content_replace($matches) {
+  $dc_slot_name = $matches[1];
+  $internal_dom = $matches[2];
+  $args = array('@slot_name' => $dc_slot_name, '@dom' => $internal_dom);
+  $dynamic_web_content = format_string(' <div data-slot-container=""><div class="mautic-slot" data-slot-name="@slot_name">@dom</div></div>', $args);
+  return $dynamic_web_content;
 }
 
 /**
@@ -116,5 +126,73 @@ function mautic_form() {
     '#required' => TRUE,
   );
 
+  $options = array(
+    t('Every page except the listed pages'),
+    t('The listed pages only'),
+  );
+  $visibility = variable_get('mautic_pages_visibility', 0);
+
+  $form['mautic_pages_visibility'] = array(
+    '#type' => 'radios',
+    '#title' => t('Add tracking to specific pages'),
+    '#options' => $options,
+    '#default_value' => $visibility,
+  );
+
+  $pages = variable_get('mautic_pages', MAUTIC_PAGES);
+  $description = t("Specify pages by using their paths. Enter one path per line. The '*' character is a wildcard. Example paths are %blog for the blog page and %blog-wildcard for every personal blog. %front is the front page.", array('%blog' => 'blog', '%blog-wildcard' => 'blog/*', '%front' => '<front>'));
+
+  $form['mautic_pages'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Pages'),
+    '#title_display' => 'invisible',
+    '#default_value' => $pages,
+    '#description' => $description,
+    '#rows' => 10,
+  );
+
   return system_settings_form($form);
+}
+
+/**
+ * Based on visibility setting this function returns TRUE if Mautic's tracking js should
+ * be added to the current page and FALSE otherwise.
+ */
+function _mautic_visibility_pages() {
+  static $page_match;
+
+  // Cache visibility result if function is called more than once.
+  if (!isset($page_match)) {
+
+    $visibility = variable_get('mautic_pages_visibility', 0);
+    $setting_pages = variable_get('mautic_pages', MAUTIC_PAGES);
+
+    // Match path if necessary.
+    if (!empty($setting_pages)) {
+      // Convert path to lowercase. This allows comparison of the same path
+      // with different case. Ex: /Page, /page, /PAGE.
+      $pages = drupal_strtolower($setting_pages);
+      if ($visibility < 2) {
+        // Convert the Drupal path to lowercase
+        $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
+        // Compare the lowercase internal and lowercase path alias (if any).
+        $page_match = drupal_match_path($path, $pages);
+        if ($path != $_GET['q']) {
+          $page_match = $page_match || drupal_match_path($_GET['q'], $pages);
+        }
+        // When $visibility has a value of 0, the tracking code is displayed on
+        // all pages except those listed in $pages. When set to 1, it
+        // is displayed only on those pages listed in $pages.
+        $page_match = !($visibility xor $page_match);
+      }
+      else {
+        $page_match = FALSE;
+      }
+    }
+    else {
+      $page_match = TRUE;
+    }
+
+  }
+  return $page_match;
 }
