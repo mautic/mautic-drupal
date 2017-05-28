@@ -24,3 +24,8 @@ To add dynamic web content, insert this shortcode:
 `[mautic type="content" slot="slot_name"] <your default content> [/mautic]`
 
 where `slot_name` is the dynamic content slot token name you gave in the campaign.
+
+### Prefill Mautic forms
+
+You can prefill an embedded Mautic form in Drupal page by passing form keys as Hash params in the URL.
+e.g. /your-form-url#p:email=email@somedomain.com&firstname=John&lastname=Doe
