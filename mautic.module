@@ -53,6 +53,9 @@ function mautic_page_alter(&$page) {
     $script .= '})(window,document,"script","' . $mautic_base_url . '/mtc.js","mt");';
     $script .= 'mt("send", "pageview");';
     drupal_add_js($script, array('scope' => 'header', 'type' => 'inline', 'requires_jquery' => FALSE));
+
+    // Prefill Helper
+    drupal_add_js(drupal_get_path('module', 'mautic') . '/js/mauticform-prefill.js', array('scope' => 'footer', 'requires_jquery' => FALSE));
   }
 }
 
