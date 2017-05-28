@@ -73,12 +73,14 @@ function mautic_filter_info() {
 function mautic_filter_shortcodes_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   $text = preg_replace_callback('/\[mauticform id=(.*)\]/', '_mautic_form_replace', $text);
   $text = preg_replace_callback('/\[mautic type="content" slot="(.*)"\](.*)\[\/mautic\]/', '_mautic_dynamic_content_replace', $text);
+  $text = preg_replace_callback('/\[mauticfocusitem id=(.*)\]/', '_mautic_focus_item_replace', $text);
   return $text;
 }
 
 function mautic_filter_shortcodes_tips($filter, $format, $long) {
   return t("[mauticform id=1] - Insert a Mautic form with given ID.<br>
-  [mautic type=\"content\" slot=\"slot_name\"]Default Content[/mautic] - Insert dynamic web content.");
+          [mautic type=\"content\" slot=\"slot_name\"]Default Content[/mautic] - Insert dynamic web content.<br>
+          [mauticfocusitem id=1] - Insert Mautic Focus Item with given ID.");
 }
 
 function _mautic_form_replace($matches) {
@@ -93,8 +95,16 @@ function _mautic_dynamic_content_replace($matches) {
   $dc_slot_name = $matches[1];
   $internal_dom = $matches[2];
   $args = array('@slot_name' => $dc_slot_name, '@dom' => $internal_dom);
-  $dynamic_web_content = format_string(' <div data-slot-container=""><div class="mautic-slot" data-slot-name="@slot_name">@dom</div></div>', $args);
+  $dynamic_web_content = format_string('<div data-slot-container=""><div class="mautic-slot" data-slot-name="@slot_name">@dom</div></div>', $args);
   return $dynamic_web_content;
+}
+
+function _mautic_focus_item_replace($matches) {
+  $focus_id = $matches[1];
+  $mautic_base_url = variable_get('mautic_base_url', '');
+  $args = array('@mautic_base_url' => $mautic_base_url, '@focus_id' => $focus_id);
+  $script = format_string('<script src="@mautic_base_url/focus/@focus_id.js" charset="utf8" async="async"></script>', $args);
+  return $script;
 }
 
 /**
