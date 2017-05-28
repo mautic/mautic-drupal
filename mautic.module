@@ -77,7 +77,7 @@ function mautic_filter_shortcodes_process($text, $filter, $format, $langcode, $c
 }
 
 function mautic_filter_shortcodes_tips($filter, $format, $long) {
-  return t("[mauticform id=1] - Insert a Mautic form with given ID.\n
+  return t("[mauticform id=1] - Insert a Mautic form with given ID.<br>
   [mautic type=\"content\" slot=\"slot_name\"]Default Content[/mautic] - Insert dynamic web content.");
 }
 
