@@ -46,7 +46,7 @@ function mautic_help($path, $arg) {
  */
 function mautic_page_alter(&$page) {
   if( _mautic_visibility_pages()) {
-    $mautic_base_url = variable_get('mautic_base_url', '');
+    $mautic_base_url = trim(variable_get('mautic_base_url', ''), " \t\n\r\0\x0B/");
     $script = '(function(w,d,t,u,n,a,m){w["MauticTrackingObject"]=n;';
     $script .= 'w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)},a=d.createElement(t),';
     $script .= 'm=d.getElementsByTagName(t)[0];a.async=1;a.src=u;m.parentNode.insertBefore(a,m)';
@@ -82,7 +82,7 @@ function mautic_filter_shortcodes_tips($filter, $format, $long) {
 
 function _mautic_form_replace($matches) {
   $form_id = $matches[1];
-  $mautic_base_url = variable_get('mautic_base_url', '');
+  $mautic_base_url = trim(variable_get('mautic_base_url', ''), " \t\n\r\0\x0B/");
   $args = array('@mautic_base_url' => $mautic_base_url, '@form_id' => $form_id);
   $script = format_string('<script src="@mautic_base_url/form/generate.js?id=@form_id"></script>', $args);
   return $script;
@@ -122,7 +122,7 @@ function mautic_form() {
     '#title' => t('Mautic URL'),
     '#default_value' => variable_get('mautic_base_url', ''),
     '#size' => 60,
-    '#description' => t("Your mautic base url."),
+    '#description' => t("Your mautic base url, e.g. https://mydomain.com. No trailing slash required."),
     '#required' => TRUE,
   );
 
