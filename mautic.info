@@ -4,4 +4,4 @@ package = Mautic
 version = 7.x-1.0
 core = 7.x
 files[] = mautic.module
-configure = admin/config/mautic
+configure = admin/config/system/mautic

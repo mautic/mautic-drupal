@@ -102,8 +102,8 @@ function _mautic_dynamic_content_replace($matches) {
 function mautic_menu() {
   $items = array();
 
-  $items['admin/config/mautic'] = array(
-    'title' => 'Mautic URL',
+  $items['admin/config/system/mautic'] = array(
+    'title' => 'Mautic',
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mautic_form'),
