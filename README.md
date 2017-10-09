@@ -32,3 +32,8 @@ To add Focus Item, insert this shortcode
 ID is the identifier of the Focus item you want to embed.
 
 To control Focus Item visibility, use Blocks to render your Focus item on specific paths.
+
+### Prefill Mautic forms
+
+You can prefill an embedded Mautic form in Drupal page by passing form keys as Hash params in the URL.
+e.g. /your-form-url#p:email=email@somedomain.com&firstname=John&lastname=Doe
