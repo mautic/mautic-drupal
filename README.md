@@ -25,6 +25,14 @@ To add dynamic web content, insert this shortcode:
 
 where `slot_name` is the dynamic content slot token name you gave in the campaign.
 
+To add Focus Item, insert this shortcode
+
+`[mauticfocusitem id=ID]`
+
+ID is the identifier of the Focus item you want to embed.
+
+To control Focus Item visibility, use Blocks to render your Focus item on specific paths.
+
 ### Prefill Mautic forms
 
 You can prefill an embedded Mautic form in Drupal page by passing form keys as Hash params in the URL.

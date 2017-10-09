@@ -30,9 +30,9 @@ function mautic_help($path, $arg) {
       $output .= '<h3>' . t('Features') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Mautic Tracking') . '</dt>';
-      $output .= '<dd>' . t('Tracking image works right after you enable the module, insert Base URL and save the plugin. That means it will insert 1 px gif image loaded from your Mautic instance. You can check HTML source code (CTRL + U) of your Drupal website to make sure the plugin works. You should be able to find something like this:<br><code>&lt;img src="http://yourmautic.com/mtracking.gif" /&gt;</code><br>There will be probably longer URL query string at the end of the tracking image URL. It is encoded additional data about the page (title, url, referrer, language).') . '</dd>';
+      $output .= '<dd>' . t('Tracking script works right after you enable the module, insert Base URL and save the plugin. That means it will insert a Javascript tracking script from your Mautic instance. You can check HTML source code (CTRL + U) of your Drupal website to make sure the plugin works. You should be able to find the script by searching for:<br><code>"http://yourmautic.com/mtc.js"</code><br>There will be probably longer URL query string at the end of the tracking script URL. It is encoded additional data about the page (title, url, referrer, language).') . '</dd>';
       $output .= '<dt>' . t('Form embed') . '</dt>';
-      $output .= '<dd>' . t("To embed a Mautic form into Drupal content, insert this code snippet:<br><code>{mauticform id=ID width=300px height=300px}</code><br>ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.") . '</dd>';
+      $output .= '<dd>' . t("To embed a Mautic form into Drupal content, insert this code snippet:<br><code>[mauticform id=ID]</code><br>ID is the identifier of the Mautic form you want to embed. You can see the ID of the form in the URL of the form detail. For example for www.yourmautic.com/forms/view/1, ID = 1.") . '</dd>';
       $output .= '</dl>';
       $output .= '<p>' . t('Mautic-Drupal module <a href="@doc">documentation</a>, <a href="@issues">issue reporting</a>', array('@doc' => 'https://github.com/mautic/mautic-drupal/tree/7.x#readme', '@issues' => 'https://github.com/mautic/mautic-drupal/issues')) . '</p>';
 
@@ -46,7 +46,7 @@ function mautic_help($path, $arg) {
  */
 function mautic_page_alter(&$page) {
   if( _mautic_visibility_pages()) {
-    $mautic_base_url = variable_get('mautic_base_url', '');
+    $mautic_base_url = trim(variable_get('mautic_base_url', ''), " \t\n\r\0\x0B/");
     $script = '(function(w,d,t,u,n,a,m){w["MauticTrackingObject"]=n;';
     $script .= 'w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)},a=d.createElement(t),';
     $script .= 'm=d.getElementsByTagName(t)[0];a.async=1;a.src=u;m.parentNode.insertBefore(a,m)';
@@ -76,16 +76,19 @@ function mautic_filter_info() {
 function mautic_filter_shortcodes_process($text, $filter, $format, $langcode, $cache, $cache_id) {
   $text = preg_replace_callback('/\[mauticform id=(.*)\]/', '_mautic_form_replace', $text);
   $text = preg_replace_callback('/\[mautic type="content" slot="(.*)"\](.*)\[\/mautic\]/', '_mautic_dynamic_content_replace', $text);
+  $text = preg_replace_callback('/\[mauticfocusitem id=(.*)\]/', '_mautic_focus_item_replace', $text);
   return $text;
 }
 
 function mautic_filter_shortcodes_tips($filter, $format, $long) {
-  return t('[mauticform id=1] - Insert a Mautic form with given ID.\n[mautic type="content" slot="slot_name"]Default Content[/mautic] - Insert dynamic web content.');
+  return t("[mauticform id=1] - Insert a Mautic form with given ID.<br>
+          [mautic type=\"content\" slot=\"slot_name\"]Default Content[/mautic] - Insert dynamic web content.<br>
+          [mauticfocusitem id=1] - Insert Mautic Focus Item with given ID.");
 }
 
 function _mautic_form_replace($matches) {
   $form_id = $matches[1];
-  $mautic_base_url = variable_get('mautic_base_url', '');
+  $mautic_base_url = trim(variable_get('mautic_base_url', ''), " \t\n\r\0\x0B/");
   $args = array('@mautic_base_url' => $mautic_base_url, '@form_id' => $form_id);
   $script = format_string('<script src="@mautic_base_url/form/generate.js?id=@form_id"></script>', $args);
   return $script;
@@ -95,8 +98,16 @@ function _mautic_dynamic_content_replace($matches) {
   $dc_slot_name = $matches[1];
   $internal_dom = $matches[2];
   $args = array('@slot_name' => $dc_slot_name, '@dom' => $internal_dom);
-  $dynamic_web_content = format_string(' <div data-slot-container=""><div class="mautic-slot" data-slot-name="@slot_name">@dom</div></div>', $args);
+  $dynamic_web_content = format_string('<div data-slot-container=""><div class="mautic-slot" data-slot-name="@slot_name">@dom</div></div>', $args);
   return $dynamic_web_content;
+}
+
+function _mautic_focus_item_replace($matches) {
+  $focus_id = $matches[1];
+  $mautic_base_url = variable_get('mautic_base_url', '');
+  $args = array('@mautic_base_url' => $mautic_base_url, '@focus_id' => $focus_id);
+  $script = format_string('<script src="@mautic_base_url/focus/@focus_id.js" charset="utf8" async="async"></script>', $args);
+  return $script;
 }
 
 /**
@@ -105,8 +116,8 @@ function _mautic_dynamic_content_replace($matches) {
 function mautic_menu() {
   $items = array();
 
-  $items['admin/config/mautic'] = array(
-    'title' => 'Mautic URL',
+  $items['admin/config/system/mautic'] = array(
+    'title' => 'Mautic',
     'description' => 'Configuration for Current posts module',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mautic_form'),
@@ -125,7 +136,7 @@ function mautic_form() {
     '#title' => t('Mautic URL'),
     '#default_value' => variable_get('mautic_base_url', ''),
     '#size' => 60,
-    '#description' => t("Your mautic base url."),
+    '#description' => t("Your mautic base url, e.g. https://mydomain.com. No trailing slash required."),
     '#required' => TRUE,
   );
 
