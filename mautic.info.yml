@@ -1,0 +1,12 @@
+name: 'Mautic'
+type: module
+description: 'Allows your site to be tracked by Mautic by adding a Javascript tracking code to every page.'
+package: Statistics
+# core: 8.x
+configure: mautic.admin_settings_form
+
+# Information added by Drupal.org packaging script on 2017-11-02
+version: '8.x-1.0'
+core: '8.x'
+project: 'mautic'
+datestamp: 1509621187
