@@ -1,3 +1,5 @@
+The Drupal module is now hosted at [https://www.drupal.org/project/mautic](https://www.drupal.org/project/mautic) - please raise issues and PR's against that repository as this one is no longer being maintained.
+
 Mautic Drupal 6.x module
 ========================
 
